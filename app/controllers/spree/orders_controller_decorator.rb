@@ -1,7 +1,7 @@
 Spree::OrdersController.class_eval do
 
 	after_filter :update_child_order, only: [:populate]
-	
+	after_filter :empty_child_order, only: [:empty]
 
 	def populate
     @order    = current_order(create_order_if_necessary: true)
@@ -52,5 +52,11 @@ Spree::OrdersController.class_eval do
   		end
   	end
 
-  	
+  	def empty_child_order
+  		if @order.children_orders.present?
+  			@order.children_orders.each do |child_order|
+  				child_order.destroy
+  			end
+  		end
+  	end
 end
