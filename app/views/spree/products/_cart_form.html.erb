@@ -50,7 +50,7 @@
         <% if @product.can_supply? %>
           <div class="add-to-cart">
             <br />
-            <%= select_tag "recipient" , options_for_select(['Me', 'Receipent']), class: "form-control "%>
+            <%= select_tag "recipient" , options_for_select(@recipients), class: "form-control "%>
             <span class="mt-5 align-center">or</span>
  						<%= text_field_tag "recipient_name", "", class: "form-control mt-5" ,placeholder: "Receipent Name"%>
             <div class="input-group mt-10">
