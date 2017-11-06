@@ -59,4 +59,16 @@ Spree::OrdersController.class_eval do
   			end
   		end
   	end
+
+    def assign_order_with_lock
+      if params[:order_id].present?
+        @order = Spree::Order.find(params[:order_id])
+      else
+        @order = current_order(lock: true)
+      end
+      unless @order
+        flash[:error] = Spree.t(:order_not_found)
+        redirect_to root_path and return
+      end
+    end
 end
