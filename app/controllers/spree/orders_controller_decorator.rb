@@ -37,8 +37,10 @@ Spree::OrdersController.class_eval do
   	def update_child_order
   		if params[:recipient] == "Me"
   			recipient = params[:recipient]
-  		else
+  		elsif params[:recipient] == "Recipient"
   			recipient = params[:recipient_name].present? ? params[:recipient_name] : "Me"
+      else
+        recipient = params[:recipient]
   		end
   		if @order.children_orders.present?
   			@child_order = Spree::Order.find_by_recipient_name(recipient)

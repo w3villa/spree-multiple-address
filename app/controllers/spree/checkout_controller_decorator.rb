@@ -54,9 +54,7 @@ module Spree
                 end
               end
             elsif params[:state] == "delivery"
-              @order.children_orders.each do |child_order|
 
-              end
             elsif params[:state] == "payment"
             end
           end

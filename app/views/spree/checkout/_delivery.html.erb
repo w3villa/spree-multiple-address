@@ -38,18 +38,25 @@
             </tbody>
           </table>
 
-          <h4 class="stock-shipping-method-title"><%= Spree.t(:shipping_method) %></h4>
-          <ul class="list-group shipping-methods">
-            <% ship_form.object.shipping_rates.each do |rate| %>
-              <li class="list-group-item shipping-method">
-                <label>
-                  <%= ship_form.radio_button :selected_shipping_rate_id, rate.id %>
-                  <span class="rate-name"><%= rate.name %></span>
-                  <span class="badge rate-cost"><%= rate.display_cost %></span>
-                </label>
-              </li>
-            <% end %>
-          </ul>
+          <% @order.children_orders.each_with_index do |child_order, counter|%>
+          	<% child_order_shipment = child_order.shipments.last%>
+	          <h4 class="stock-shipping-method-title">Shipping Method for <%= child_order.recipient_name%></h4>
+	          <ul class="list-group shipping-methods">
+	            <% child_order_shipment.shipping_rates.each do |rate| %>
+	              <li class="list-group-item shipping-method">
+	                <label>
+	                	<%if rate.selected == true%>
+	                  	<%= radio_button_tag "child_orders[#{counter}][selected_shipping_rate_id]", rate.id, checked: "true"%>
+	                  <%else%>
+	                  	<%= radio_button_tag "child_orders[#{counter}][selected_shipping_rate_id]", rate.id%>
+	                  <%end%>
+	                  <span class="rate-name"><%= rate.name %></span>
+	                  <span class="badge rate-cost"><%= rate.display_cost %></span>
+	                </label>
+	              </li>
+	            <% end %>
+	          </ul>
+	        <%end%>
         </div>
       <% end %>
 
