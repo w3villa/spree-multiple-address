@@ -1,6 +1,6 @@
 module Spree
 	Order.class_eval do
-		after_update :update_parent_line_items
+		# after_update :update_parent_line_items
 		# ********************* Association *****************************************
 		belongs_to :parent_order, class_name: "Spree::Order", foreign_key: :parent_id
 		has_many :children_orders, class_name: "Spree::Order", foreign_key: :parent_id
@@ -17,7 +17,6 @@ module Spree
 		end
 
 		def update_parent_line_items
-			p "-----"*10
 			if self.parent_id == nil
 				@order = self
 			else

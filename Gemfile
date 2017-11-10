@@ -18,6 +18,7 @@ gem 'coffee-rails', '~> 4.1.0'
 gem 'spree', '~> 3.1.0'
 gem 'spree_auth_devise', '~> 3.3'
 gem 'spree_gateway', '~> 3.3'
+gem 'httparty'
 # Use jquery as the JavaScript library
 gem 'jquery-rails'
 # Turbolinks makes following links in your web application faster. Read more: https://github.com/rails/turbolinks

@@ -2,6 +2,8 @@ Spree::OrdersController.class_eval do
 
 	after_filter :update_child_order, only: [:populate]
 	after_filter :empty_child_order, only: [:empty]
+  after_filter :update_child_order_state, only: [:update]
+  after_filter :change_child_order_state_to_cart, only: [:edit]
 
 	def populate
     @order    = current_order(create_order_if_necessary: true)
@@ -36,18 +38,18 @@ Spree::OrdersController.class_eval do
   		if params[:recipient] == "Me"
   			recipient = params[:recipient]
   		else
-  			recipient = params[:recipient_name].present? ? params[:recipient_name] : params[:recipient]
+  			recipient = params[:recipient_name].present? ? params[:recipient_name] : "Me"
   		end
   		if @order.children_orders.present?
   			@child_order = Spree::Order.find_by_recipient_name(recipient)
   			if @child_order.present?
   				@child_order.contents.add(@variant, @quantity, @options)
   			else
-  				@child_order = Spree::Order.create(parent_id: @order.id, recipient_name: recipient)
+  				@child_order = Spree::Order.create(parent_id: @order.id, recipient_name: recipient, email: "child_order@example.com")
   				@child_order.contents.add(@variant, @quantity, @options)
   			end
   		else
-  			@child_order = Spree::Order.create(parent_id: @order.id, recipient_name: recipient)
+  			@child_order = Spree::Order.create(parent_id: @order.id, recipient_name: recipient, email: "child_order@example.com")
   			@child_order.contents.add(@variant, @quantity, @options)
   		end
   	end
@@ -59,6 +61,38 @@ Spree::OrdersController.class_eval do
   			end
   		end
   	end
+
+
+    def update_child_order_state
+      if params.has_key?(:checkout)
+        @order.children_orders.each do |child_order|
+          child_order.next if child_order.cart?
+        end
+      else
+        @parent_order = @order.parent_order
+        @parent_order.empty!
+        @parent_order.children_orders.each do |child_order|
+          if child_order.line_items.present?
+            child_order.line_items.each do |line_item|
+              @variant = line_item.variant
+              @quantity = line_item.quantity
+              @options  =  {}
+              @parent_order.contents.add(@variant, @quantity, @options)
+            end
+          else
+            child_order.destroy!
+          end
+        end
+      end
+    end
+
+    def change_child_order_state_to_cart
+      @order.children_orders.each do |child_order|
+        unless child_order.cart?
+          child_order.update_attributes(state: "cart")
+        end
+      end
+    end
 
     def assign_order_with_lock
       if params[:order_id].present?
