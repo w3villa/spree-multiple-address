@@ -54,7 +54,14 @@ module Spree
                 end
               end
             elsif params[:state] == "delivery"
-
+              @order.children_orders.each_with_index do |child_order, counter|
+                child_order.shipments.last.shipping_rates.update_all(selected: false)
+                Spree::ShippingRate.find((params[:child_orders][counter.to_s][:selected_shipping_rate_id]).to_i).update_attributes(selected: true)
+                if child_order.state != "delivery"
+                  child_order.update_attributes(state: "delivery")
+                end
+                child_order.next
+              end
             elsif params[:state] == "payment"
             end
           end
