@@ -1,7 +1,7 @@
 module Spree
 	CheckoutController.class_eval do 
 
-		after_filter :update_child_orders, only: [:update]
+		before_filter :update_child_orders, only: [:update]
 
 
 		def update
@@ -33,6 +33,10 @@ module Spree
             if params[:state] == "address"
               @order.children_orders.each_with_index do |child_order, index|
                 @bill_address = Spree::Address.create((params[:order][:bill_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+
+                if @bill_address.errors.present?
+                  raise Exception.new(@bill_address.errors.full_messages.join(','))
+                end
                 # handling the case if user comes back from address later state to address state again
                 if child_order.bill_address.present?
                   child_order.bill_address.destroy
@@ -47,6 +51,12 @@ module Spree
                 else
                   @ship_address = Spree::Address.create((params[:child_orders][(index).to_s][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
                 end
+                p "111111"*20
+                p @ship_address
+                if @ship_address.errors.present?
+                  raise Exception.new(@ship_address.errors.full_messages.join(','))
+                end
+                p @ship_address.errors
                 child_order.update_attributes(bill_address_id: @bill_address.id)
                 child_order.update_attributes(ship_address_id: @ship_address.id)
                 if child_order.state == "address"
@@ -62,7 +72,21 @@ module Spree
                 end
                 child_order.next
               end
+              total_shipment = @order.children_shipment_sum
+              shipping_rate = @order.shipments.last.selected_shipping_rate
+              shipping_rate.update_attributes(cost: total_shipment)
+              @order.set_shipments_cost
+              @order.update_totals
+              @order.persist_totals
             elsif params[:state] == "payment"
+              payment_method = Spree::PaymentMethod.where(name: "check").last
+              @order.children_orders.each do |child_order|
+                child_order.payments.create(amount: child_order.total, payment_method_id: payment_method.id)
+                child_order.next
+              end
+              if @order.user.present?
+                @order.children_orders.update_all(user_id: @order.user_id)
+              end
             end
           end
         rescue Exception => error
@@ -70,8 +94,8 @@ module Spree
           p "Exception "*20
           p error.message
           p error.backtrace.join("\n")
-          # redirect_to root_path, :flash=> {:error => error.message}
-          # return
+          redirect_to :back, :flash=> {:error => error.message}
+          return
         end
 			end
 

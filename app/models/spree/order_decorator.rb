@@ -16,6 +16,10 @@ module Spree
 			return recipient_arr
 		end
 
+		def children_shipment_sum
+			children_orders.collect{|child_order| child_order.shipments.to_a.sum(&:cost)}.sum.to_f
+		end
+
 		def update_parent_line_items
 			if self.parent_id == nil
 				@order = self
