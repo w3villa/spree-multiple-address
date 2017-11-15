@@ -52,6 +52,7 @@ module Spree
                   @ship_address = Spree::Address.create((params[:child_orders][(index).to_s][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
                 end
                 p "111111"*20
+                p @bill_address
                 p @ship_address
                 if @ship_address.errors.present?
                   raise Exception.new(@ship_address.errors.full_messages.join(','))
@@ -93,30 +94,39 @@ module Spree
           p "6666"*20
           p "Exception "*20
           p error.message
-          p error.backtrace.join("\n")
+          # p error.backtrace.join("\n")
           redirect_to :back, :flash=> {:error => error.message}
           return
         end
 			end
 
       def get_ship_address
-        if params[:order][:use_billing].present?
-          if params[:order][:ship_address_attributes].present?
-            if params[:order][:ship_address_attributes][:id].present?
-              # if user address exist and opted for use billing option
-              user_ship_address = Spree::Address.find(params[:order][:ship_address_attributes][:id].to_i)
-              @ship_address = Spree::Address.create(firstname: user_ship_address.firstname,lastname: user_ship_address.lastname,address1: user_ship_address.address1,address2:  user_ship_address.address2,city: user_ship_address.city,zipcode: user_ship_address.zipcode, phone: user_ship_address.phone,state_id: user_ship_address.state_id, country_id: user_ship_address.country_id, phone: user_ship_address.phone)
-              # @ship_address = user_ship_address.clone.save
+        if @order.user.present?
+          if params[:order][:use_billing].present?
+            if params[:order][:ship_address_attributes].present?
+              if params[:order][:ship_address_attributes][:id].present?
+                # if user address exist and opted for use billing option
+                user_ship_address = Spree::Address.find(params[:order][:ship_address_attributes][:id].to_i)
+                @ship_address = Spree::Address.create(firstname: user_ship_address.firstname,lastname: user_ship_address.lastname,address1: user_ship_address.address1,address2:  user_ship_address.address2,city: user_ship_address.city,zipcode: user_ship_address.zipcode, phone: user_ship_address.phone,state_id: user_ship_address.state_id, country_id: user_ship_address.country_id, phone: user_ship_address.phone)
+                # @ship_address = user_ship_address.clone.save
+              else
+                # if user address does not exist and opted for not using billing option
+                @ship_address = Spree::Address.create((params[:order][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+              end
             else
-              # if user address does not exist and opted for not using billing option
-              @ship_address = Spree::Address.create((params[:order][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+              # if user address does not exist and opted for use billing option
+              @ship_address = Spree::Address.create((params[:order][:bill_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
             end
           else
-            # if user address does not exist and opted for use billing option
-            @ship_address = Spree::Address.create((params[:order][:bill_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+            @ship_address = Spree::Address.create((params[:order][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
           end
         else
-          @ship_address = Spree::Address.create((params[:order][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+          # For Guest Checkout
+          if params[:order][:use_billing].present?
+            @ship_address = Spree::Address.create((params[:order][:bill_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+          else
+            @ship_address = Spree::Address.create((params[:order][:ship_address_attributes]).permit(:firstname, :lastname, :address1, :address2, :city, :zipcode, :state_id, :country_id, :phone))
+          end
         end
       end
 	end
