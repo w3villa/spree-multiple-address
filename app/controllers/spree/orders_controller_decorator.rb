@@ -43,7 +43,7 @@ Spree::OrdersController.class_eval do
         recipient = params[:recipient]
   		end
   		if @order.children_orders.present?
-  			@child_order = Spree::Order.find_by_recipient_name(recipient)
+  			@child_order =  @order.children_orders.find_by_recipient_name(recipient)
   			if @child_order.present?
   				@child_order.contents.add(@variant, @quantity, @options)
   			else

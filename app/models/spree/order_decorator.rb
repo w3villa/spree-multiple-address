@@ -30,10 +30,7 @@ module Spree
 
 			@order.children_orders.each do |child_order|
 				if child_order.line_items.present?
-					p "8888"*15
 					if child_order.line_items.count == 1 &&  child_order.line_items.first.quantity == 0
-						p "999999"*15
-						p child_order
 						child_order.destroy!
 					else
 						child_order.line_items.each do |line_item|

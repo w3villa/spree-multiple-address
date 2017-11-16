@@ -44,6 +44,7 @@
               </div>
               <div class="panel-body">
                 <% child_order_address = child_order.ship_address.present? ? child_order.ship_address : Spree::Address.new%>
+                <h3 class=“panel-title”>Shipping Address for <%= child_order.recipient_name %></h3>
                 <%= render :partial => 'child_order_address_form', :locals => { :form => bill_form, :address_type => 'billing', :address => child_order_address, count: index } %>
               </div>
             <% end %>
