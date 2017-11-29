@@ -23,6 +23,8 @@ Things you may want to cover:
 
 * ...
 
+To install the gem
+rails g multiple_address_spree_checkout:install
 
 Please feel free to use a different markup language if you do not plan to run
 <tt>rake doc:app</tt>.
